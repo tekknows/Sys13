@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Report IT issue</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body class="popup-page">
+    <main class="popup-panel">
+      <h2>Report laptop issue</h2>
+      <p class="subtle">Send a quick support message to the IT manager.</p>
+
+      <form id="issue-popup-form" class="popup-form">
+        <label>
+          Assigned employee
+          <input id="issue-employee" type="text" value="Auto-detecting..." readonly />
+        </label>
+
+        <label>
+          Assigned laptop
+          <input id="issue-laptop" type="text" value="Auto-detecting..." readonly />
+        </label>
+
+        <input id="issue-device-id" type="hidden" />
+
+        <label>
+          Issue type
+          <select id="issue-category">
+            <option value="Hardware">Hardware</option>
+            <option value="Software">Software</option>
+            <option value="Browser Extension">Browser Extension</option>
+            <option value="Website Blocking">Website Blocking</option>
+            <option value="Network / Internet">Network / Internet</option>
+            <option value="Other">Other</option>
+          </select>
+        </label>
+
+        <label>
+          Priority
+          <select id="issue-priority">
+            <option value="Low">Low</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="High">High</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </label>
+
+        <label>
+          Problem details
+          <textarea id="issue-description" rows="5" placeholder="Describe the issue and how it affects your work." required></textarea>
+        </label>
+
+        <button type="submit">Send to IT manager</button>
+      </form>
+
+      <div class="thread-panel">
+        <h3>Ticket conversation</h3>
+        <div id="issue-thread" class="issue-thread"></div>
+      </div>
+
+      <div class="thread-panel">
+        <h3>My tickets</h3>
+        <div id="issue-ticket-list" class="issue-ticket-list"></div>
+      </div>
+
+      <div class="version-row">
+        <span>Extension version</span>
+        <strong id="extension-version">v1.2.0</strong>
+      </div>
+
+      <div id="popup-status" class="status" aria-live="polite"></div>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>

@@ -1,0 +1,196 @@
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f5f7fb;
+  color: #1d2433;
+}
+
+.popup-page {
+  min-width: 360px;
+  min-height: 400px;
+  background: #f5f7fb;
+  padding: 16px;
+}
+
+.popup-panel {
+  background: white;
+  border: 1px solid #e6ebf2;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(33, 39, 49, 0.08);
+  padding: 18px;
+}
+
+.option-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.panel {
+  width: min(560px, 100%);
+  background: white;
+  border: 1px solid #e6ebf2;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px rgba(33, 39, 49, 0.08);
+  padding: 28px;
+}
+
+h1 {
+  margin-top: 0;
+}
+
+.subtle {
+  color: #5d6b82;
+}
+
+#settings-form,
+.popup-form {
+  display: grid;
+  gap: 16px;
+}
+
+label {
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea,
+select,
+textarea {
+  border: 1px solid #d6dfef;
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+button {
+  border: 0;
+  border-radius: 10px;
+  background: #2f6fed;
+  color: white;
+  font-weight: 700;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.thread-panel {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid #e6ebf2;
+}
+
+.issue-thread {
+  display: grid;
+  gap: 12px;
+  margin-top: 10px;
+  max-height: 180px;
+  overflow: auto;
+}
+
+.thread-message {
+  border-radius: 12px;
+  padding: 10px 12px;
+  border: 1px solid #e6ebf2;
+  background: #f8fafc;
+}
+
+.thread-message.admin {
+  background: #eef3ff;
+}
+
+.thread-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #60708a;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.thread-text {
+  white-space: pre-wrap;
+  line-height: 1.5;
+}
+
+.thread-empty {
+  color: #5d6b82;
+  font-style: italic;
+}
+
+.issue-ticket-list {
+  display: grid;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.ticket-list-item {
+  border: 1px solid #e6ebf2;
+  border-radius: 12px;
+  background: #f8fafc;
+  padding: 10px 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.ticket-list-item.retention-expired {
+  border-color: #f4d2d9;
+  background: #fff6f8;
+}
+
+.ticket-list-item__header,
+.ticket-list-item__meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 12px;
+  color: #60708a;
+}
+
+.ticket-list-item__summary {
+  color: #1d2433;
+  line-height: 1.4;
+  font-size: 13px;
+}
+
+.version-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid #e6ebf2;
+  color: #5d6b82;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.version-row strong {
+  color: #1d2433;
+}
+
+.status {
+  margin-top: 18px;
+  color: #224c38;
+  background: #eafaf2;
+  border: 1px solid #cfeadd;
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.status.error {
+  color: #8b1e2d;
+  background: #fff0f3;
+  border-color: #f3ced6;
+}
