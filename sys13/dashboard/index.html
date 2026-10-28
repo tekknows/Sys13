@@ -639,7 +639,7 @@
                       <h3>IT Manager email</h3>
                       <p>Set the support inbox used for employee laptop issue reports.</p>
                     </div>
-                    <input id="admin-email" type="email" value="admin@sys13.com" placeholder="it.manager@company.com" />
+                    <input id="admin-email" type="email" value="" placeholder="it.manager@company.com" />
                   </div>
 
                   <div class="setting-item">
@@ -702,7 +702,7 @@
                       <form id="account-security-form" class="account-security-form">
                         <div class="password-field-row">
                           <label for="account-email">Email Address</label>
-                          <input id="account-email" type="email" placeholder="admin@sys13.com" />
+                          <input id="account-email" type="email" placeholder="name@company.com" />
                         </div>
 
                         <div class="password-field-row">
@@ -789,6 +789,7 @@
                     <div class="settings-card-body">
                       <div class="role-assignment-toolbar">
                         <input id="role-assignment-search" class="searchbox" type="search" placeholder="Search employees..." aria-label="Search employees for role assignment" />
+                        <button id="add-admin-button" class="primary-button small-button" type="button">Add admin</button>
                       </div>
 
                       <div class="role-assignment-list" id="role-assignment-list"></div>
@@ -1197,6 +1198,29 @@
             </select>
           </label>
 
+          <div id="role-assignment-credential-panel" class="stacked-form" style="margin-top: 0.5rem;">
+            <label>
+              Login password
+              <div class="password-input-wrap role-assignment-password-wrap" style="gap: 0.5rem;">
+                <div class="role-assignment-password-field">
+                  <input id="role-assignment-password" type="password" class="field-input" placeholder="Generate or enter a password" />
+                  <button id="toggle-role-assignment-password" class="password-toggle" type="button" aria-label="Show password" aria-pressed="false" data-visible="false">
+                    <svg class="password-icon eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M1.5 12S5.1 5.25 12 5.25 22.5 12 22.5 12 18.9 18.75 12 18.75 1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="12" cy="12" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                    </svg>
+                    <svg class="password-icon eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                      <path d="M2.5 2.5L21.5 21.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      <path d="M10.2 10.2A3.2 3.2 0 0 0 13.8 13.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                      <path d="M8.7 6.6A12.6 12.6 0 0 1 12 6.1c6.9 0 10.5 5.9 10.5 5.9a19.1 19.1 0 0 1-4.4 5.1M6.2 7.7A18.2 18.2 0 0 0 1.5 12s3.6 6.1 10.5 6.1c1.7 0 3.2-.3 4.5-.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                  </button>
+                </div>
+                <button type="button" id="generate-role-assignment-password" class="secondary-button small-button">Generate</button>
+              </div>
+            </label>
+          </div>
+
           <div class="modal-actions">
             <button type="button" class="secondary-button" id="role-assignment-cancel">Cancel</button>
             <button type="submit" class="primary-button">Save Changes</button>
@@ -1339,6 +1363,47 @@
           <label>
             Role
             <input id="employee-role" type="text" placeholder="Support Technician" required />
+          </label>
+
+          <label>
+            Login password
+            <div class="password-input-wrap role-assignment-password-wrap">
+              <div class="role-assignment-password-field">
+                <input id="employee-password" type="password" placeholder="Enter password for admin login" />
+                <button id="toggle-employee-password" class="password-toggle" type="button" aria-label="Show password" aria-pressed="false" data-visible="false">
+                  <svg class="password-icon eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M1.5 12S5.1 5.25 12 5.25 22.5 12 22.5 12 18.9 18.75 12 18.75 1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                  </svg>
+                  <svg class="password-icon eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.5 2.5L21.5 21.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M10.2 10.2A3.2 3.2 0 0 0 13.8 13.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M8.7 6.6A12.6 12.6 0 0 1 12 6.1c6.9 0 10.5 5.9 10.5 5.9a19.1 19.1 0 0 1-4.4 5.1M6.2 7.7A18.2 18.2 0 0 0 1.5 12s3.6 6.1 10.5 6.1c1.7 0 3.2-.3 4.5-.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+              <button type="button" id="generate-employee-password" class="secondary-button small-button">Generate</button>
+            </div>
+          </label>
+
+          <label>
+            Confirm password
+            <div class="password-input-wrap role-assignment-password-wrap">
+              <div class="role-assignment-password-field">
+                <input id="employee-confirm-password" type="password" placeholder="Re-enter password" />
+                <button id="toggle-employee-confirm-password" class="password-toggle" type="button" aria-label="Show password" aria-pressed="false" data-visible="false">
+                  <svg class="password-icon eye-open" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M1.5 12S5.1 5.25 12 5.25 22.5 12 22.5 12 18.9 18.75 12 18.75 1.5 12 1.5 12Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="12" cy="12" r="3.3" fill="none" stroke="currentColor" stroke-width="1.6"/>
+                  </svg>
+                  <svg class="password-icon eye-closed" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M2.5 2.5L21.5 21.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M10.2 10.2A3.2 3.2 0 0 0 13.8 13.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+                    <path d="M8.7 6.6A12.6 12.6 0 0 1 12 6.1c6.9 0 10.5 5.9 10.5 5.9a19.1 19.1 0 0 1-4.4 5.1M6.2 7.7A18.2 18.2 0 0 0 1.5 12s3.6 6.1 10.5 6.1c1.7 0 3.2-.3 4.5-.8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                </button>
+              </div>
+            </div>
           </label>
 
           <div class="modal-actions">
