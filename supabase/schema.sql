@@ -23,6 +23,30 @@ create table if not exists public.employees (
   updated_at timestamptz not null default now()
 );
 
+create table if not exists public.user_credentials (
+  id uuid primary key default gen_random_uuid(),
+  employee_id uuid references public.employees(id) on delete cascade,
+  email text not null unique,
+  password_hash text not null,
+  role text not null default 'Employee' check (role in ('Administrator', 'IT Staff', 'Employee')),
+  is_active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+create table if not exists public.admin_access_assignments (
+  id uuid primary key default gen_random_uuid(),
+  employee_id uuid references public.employees(id) on delete cascade,
+  email text not null unique,
+  full_name text,
+  role text not null default 'Employee' check (role in ('Administrator', 'IT Staff', 'Employee')),
+  assigned_by text not null default 'System Administrator',
+  is_active boolean not null default true,
+  granted_at timestamptz not null default now(),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
 create table if not exists public.devices (
   id uuid primary key default gen_random_uuid(),
   user_name text,
@@ -221,3 +245,4 @@ begin
   return coalesce(lower(claims ->> 'role') = 'employee', false);
 end;
 $$;
+
