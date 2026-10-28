@@ -1242,6 +1242,14 @@ function initializeSettingsPage() {
     roleSearch.addEventListener('input', renderEmployeeRoleRows);
   }
 
+  const refreshRoleButton = document.getElementById('refresh-role-list');
+  if (refreshRoleButton) {
+    refreshRoleButton.addEventListener('click', () => {
+      renderEmployeeRoleRows();
+      showSettingsMessage('role-assignment-message', 'success', 'Employee roles refreshed.');
+    });
+  }
+
   const roleList = document.getElementById('role-assignment-list');
   if (roleList) {
     roleList.addEventListener('click', (event) => {
