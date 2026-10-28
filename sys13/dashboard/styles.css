@@ -2231,7 +2231,18 @@ body[data-theme='dark'] .settings-card {
 }
 
 .role-assignment-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   margin: 0 0 16px;
+}
+
+.role-assignment-toolbar .searchbox {
+  flex: 1 1 auto;
+}
+
+.role-assignment-toolbar .icon-button {
+  flex-shrink: 0;
 }
 
 .role-assignment-list {
