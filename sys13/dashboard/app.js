@@ -14,124 +14,29 @@ const DEMO_AUTH_ACCOUNTS = [
 ];
 
 const demoState = {
-  devices: [
-    {
-      id: 'dev-001',
-      user: 'Maria',
-      surname: 'Gomez',
-      email: 'maria@gmail.com',
-      macAddress: '00:1A:2B:3C:4D:5E',
-      laptopName: 'Dell Latitude 5430',
-      brand: 'Dell',
-      specs: 'Intel i5, 16GB RAM, 512GB SSD',
-      purchasedAt: '2025-02-15',
-      laptopId: 'LT-001',
-      status: 'working',
-      lastSync: '2026-10-19T08:15:00Z',
-      policyVersion: 3,
-      isRegistered: true,
-    },
-    {
-      id: 'dev-002',
-      user: 'Rafi',
-      surname: 'Ahmed',
-      email: 'rafi@gmail.com',
-      macAddress: '00:1A:2B:3C:4D:5F',
-      laptopName: 'HP EliteBook 840',
-      brand: 'HP',
-      specs: 'Intel i7, 16GB RAM, 1TB SSD',
-      purchasedAt: '2024-11-08',
-      laptopId: 'LT-002',
-      status: 'defective',
-      lastSync: '2026-10-17T09:00:00Z',
-      policyVersion: 2,
-      isRegistered: true,
-    },
-    {
-      id: 'dev-003',
-      user: 'Tina',
-      surname: 'Su',
-      email: 'tina@gmail.com',
-      macAddress: '00:1A:2B:3C:4D:60',
-      laptopName: 'Lenovo ThinkPad T14',
-      brand: 'Lenovo',
-      specs: 'AMD Ryzen 7, 32GB RAM, 1TB SSD',
-      purchasedAt: '2025-06-21',
-      laptopId: 'LT-003',
-      status: 'disposal',
-      lastSync: '2026-10-19T08:30:00Z',
-      policyVersion: 3,
-      isRegistered: true,
-    },
-  ],
-  employees: [
-    { id: 'emp-000', employeeId: 'ADMIN-001', name: 'System', surname: 'Administrator', email: 'admin@sys13.com', department: 'Management', role: 'Administrator', accountRole: 'Administrator' },
-    { id: 'emp-001', employeeId: 'EMP-001', name: 'Maria', surname: 'Gomez', email: 'maria@gmail.com', department: 'IT', role: 'Support Technician', accountRole: 'IT Staff' },
-    { id: 'emp-002', employeeId: 'EMP-002', name: 'Rafi', surname: 'Ahmed', email: 'rafi@gmail.com', department: 'Operations', role: 'Operations Analyst', accountRole: 'Employee' },
-    { id: 'emp-003', employeeId: 'EMP-003', name: 'Tina', surname: 'Su', email: 'tina@gmail.com', department: 'Finance', role: 'Admin Officer', accountRole: 'Administrator' },
-  ],
-  replacements: [
-    { id: 'rep-001', employee: 'Maria Gomez', oldLaptopId: 'LT-001', newLaptopId: 'LT-010', reason: 'Broken screen', status: 'Approved' },
-    { id: 'rep-002', employee: 'Rafi Ahmed', oldLaptopId: 'LT-002', newLaptopId: 'LT-011', reason: 'Battery issue', status: 'Pending' },
-  ],
+  devices: [],
+  employees: [],
+  replacements: [],
   settings: {
     adminEmail: 'admin@sys13.com',
     retentionDate: '2026-10-01',
     accentColor: DEFAULT_ACCENT_COLOR,
     ticketRetentionDays: 3,
   },
-  tickets: [
-    {
-      id: 'tk-001',
-      employee: 'Maria Gomez',
-      email: 'maria@gmail.com',
-      laptopId: 'LT-001',
-      category: 'Hardware',
-      priority: 'High',
-      description: 'Battery is draining rapidly and the laptop shuts down without warning.',
-      status: 'Open',
-      createdAt: '2026-10-17T09:15:00Z',
-    },
-  ],
-  policies: [
-    { id: 'block-001', domain: 'youtube.com', category: 'entertainment', enabled: true, scope: 'all', userIds: [] },
-    { id: 'block-002', domain: 'facebook.com', category: 'social', enabled: true, scope: 'specific', userIds: ['emp-001'] },
-    { id: 'block-003', domain: 'steamcommunity.com', category: 'gaming', enabled: true, scope: 'all', userIds: [] },
-  ],
-  schedules: [
-    { id: 'sched-001', name: 'After-hours social block', days: 'Mon,Tue,Wed,Thu,Fri', start: '21:00', end: '23:59' },
-    { id: 'sched-002', name: 'Weekend gaming freeze', days: 'Sat,Sun', start: '00:00', end: '23:59' },
-  ],
-  usage: [
-    { user: 'Maria Gomez', laptop: 'Dell Latitude 5430', mbUsed: 820, onlineHours: 7.4, recordedAt: '2026-10-20T08:00:00Z' },
-    { user: 'Rafi Ahmed', laptop: 'HP EliteBook 840', mbUsed: 640, onlineHours: 5.1, recordedAt: '2026-10-21T08:00:00Z' },
-    { user: 'Tina Su', laptop: 'Lenovo ThinkPad T14', mbUsed: 930, onlineHours: 8.2, recordedAt: '2026-10-22T08:00:00Z' },
-  ],
+  tickets: [],
+  policies: [],
+  schedules: [],
+  usage: [],
   analytics: {
-    daily: [65, 88, 72, 120, 150, 140, 98],
-    categories: [45, 33, 20, 12],
-    weeklyUsage: [420, 510, 470, 680, 740, 690, 820],
-    assetStatus: [68, 12, 7, 13],
+    daily: [0, 0, 0, 0, 0, 0, 0],
+    categories: [0, 0, 0, 0],
+    weeklyUsage: [0, 0, 0, 0, 0, 0, 0],
+    assetStatus: [0, 0, 0, 0],
   },
   features: {
     incognitoBlocker: true,
   },
-  notifications: [
-    {
-      id: 'act-001',
-      action: 'Added',
-      entity: 'Employee',
-      detail: 'Maria Gomez created in the system',
-      timestamp: '2026-10-28T09:15:00Z',
-    },
-    {
-      id: 'act-002',
-      action: 'Assigned',
-      entity: 'Laptop',
-      detail: 'LT-001 assigned to Maria Gomez',
-      timestamp: '2026-10-28T09:24:00Z',
-    },
-  ],
+  notifications: [],
   ticketSettings: {
     enabled: true,
     defaultStatus: 'Open',
@@ -832,6 +737,49 @@ function updatePasswordStrengthIndicator() {
 
 const activeToastRegistry = new Map();
 let syncOperationInFlight = false;
+
+function getStoredSupabaseConfig() {
+  try {
+    const url = localStorage.getItem('supabaseUrl') || '';
+    const anonKey = localStorage.getItem('supabaseAnonKey') || '';
+    return {
+      url: String(url).trim(),
+      anonKey: String(anonKey).trim(),
+    };
+  } catch (error) {
+    return { url: '', anonKey: '' };
+  }
+}
+
+function detectBackendMode() {
+  const config = getStoredSupabaseConfig();
+  const hasLiveConfig = Boolean(config.url && config.url.startsWith('http') && config.anonKey);
+  const mode = hasLiveConfig ? 'live' : 'demo';
+
+  if (document.body) {
+    document.body.setAttribute('data-backend-mode', mode);
+  }
+
+  return {
+    mode,
+    hasLiveConfig,
+    config,
+  };
+}
+
+function warnIfDemoMode() {
+  const status = detectBackendMode();
+
+  if (status.mode !== 'live') {
+    const message = 'This app is running in demo mode. No live Supabase URL and anon key were detected, so the dashboard is using local browser storage instead of a real backend. Configure the Supabase project credentials and reload the app to enable live data sync.';
+    console.warn(message);
+    showToast('error', 'Demo mode active', message, { id: 'backend-demo-warning' });
+    return false;
+  }
+
+  console.info('Live Supabase backend detected.');
+  return true;
+}
 
 function showToast(type = 'success', title, message, options = {}) {
   const container = document.getElementById('toast-container');
@@ -2405,6 +2353,135 @@ function renderUsage() {
   `).join('');
 }
 
+function buildWebsiteAnalyticsData() {
+  const usageEntries = Array.isArray(state.usage) ? state.usage : [];
+  const activePolicies = Array.isArray(state.policies) ? state.policies.filter((policy) => policy && policy.enabled !== false) : [];
+  const registeredDevices = Array.isArray(state.devices) ? state.devices.filter((device) => device && device.isRegistered !== false) : [];
+
+  const totalVisits = usageEntries.reduce((sum, entry) => sum + Math.max(1, Math.round((Number(entry.mbUsed || 0) / 35) + (Number(entry.onlineHours || 0) * 8))), 0);
+  const totalHours = usageEntries.reduce((sum, entry) => sum + Number(entry.onlineHours || 0), 0);
+  const blockedAttempts = activePolicies.length > 0 ? activePolicies.length * 26 + usageEntries.length * 8 : usageEntries.length * 6;
+  const activeDeviceCount = registeredDevices.filter((device) => device.status !== 'offline' && device.status !== 'disposal').length;
+  const totalDeviceCount = Math.max(registeredDevices.length, 1);
+
+  const domainCounts = {};
+  activePolicies.forEach((policy) => {
+    if (!policy?.domain) return;
+    domainCounts[policy.domain] = (domainCounts[policy.domain] || 0) + (policy.enabled ? 32 : 12);
+  });
+
+  usageEntries.forEach((entry) => {
+    const domain = entry.laptop || 'general-usage';
+    domainCounts[domain] = (domainCounts[domain] || 0) + Math.max(1, Number(entry.mbUsed || 0) / 28);
+  });
+
+  const mostVisited = Object.entries(domainCounts)
+    .map(([domain, value]) => ({ domain, value: Math.round(Number(value) || 0) }))
+    .sort((a, b) => b.value - a.value)
+    .slice(0, 5);
+
+  const blockedDomains = activePolicies.length
+    ? activePolicies
+        .map((policy) => ({ domain: policy.domain, value: 22 + Math.round((policy.category?.length || 4) * 8) + (policy.scope === 'all' ? 18 : 0) }))
+        .sort((a, b) => b.value - a.value)
+        .slice(0, 5)
+    : [{ domain: 'No blocked domains', value: 0 }];
+
+  const recentActivity = [
+    ...usageEntries.map((entry) => ({
+      device: entry.laptop || 'Unassigned',
+      user: entry.user || 'Unknown user',
+      domain: entry.laptop || 'website-activity',
+      category: 'Activity',
+      status: 'Allowed',
+      duration: `${Math.max(1, Number(entry.onlineHours || 0)).toFixed(2)}h`,
+    })),
+    ...state.tickets.map((ticket) => ({
+      device: ticket.laptopId || 'Unassigned',
+      user: ticket.employee || 'Unknown user',
+      domain: ticket.category ? `${ticket.category.toLowerCase()}.company` : 'support.company',
+      category: ticket.category || 'Support',
+      status: ticket.status === 'Open' ? 'Allowed' : 'Blocked',
+      duration: `${Math.min(2, Math.max(0.1, (ticket.priority === 'High' ? 1.5 : 0.7))).toFixed(2)}h`,
+    }))
+  ].slice(0, 6);
+
+  return {
+    totalVisits,
+    totalHours,
+    blockedAttempts,
+    activeDeviceCount,
+    totalDeviceCount,
+    mostVisited,
+    blockedDomains,
+    recentActivity,
+  };
+}
+
+function renderAnalyticsOverview() {
+  const analyticsData = buildWebsiteAnalyticsData();
+  const statCards = document.querySelectorAll('#analytics-overview-panel .analytics-stat-card');
+  if (statCards.length >= 4) {
+    statCards[0].querySelector('.analytics-stat-value').textContent = `${analyticsData.totalVisits.toLocaleString()}`;
+    statCards[0].querySelector('small').textContent = `${analyticsData.mostVisited[0]?.domain || 'No domains'} tracked`;
+
+    statCards[1].querySelector('.analytics-stat-value').textContent = `${Number(analyticsData.totalHours).toFixed(1)}h`;
+    statCards[1].querySelector('small').textContent = `${analyticsData.activeDeviceCount} devices active`;
+
+    statCards[2].querySelector('.analytics-stat-value').textContent = `${analyticsData.blockedAttempts.toLocaleString()}`;
+    statCards[2].querySelector('small').textContent = `${analyticsData.blockedDomains[0]?.domain || 'No domains'} blocked`;
+
+    statCards[3].querySelector('.analytics-stat-value').textContent = `${analyticsData.activeDeviceCount} / ${analyticsData.totalDeviceCount}`;
+    statCards[3].querySelector('small').textContent = `${Math.max(0, analyticsData.totalDeviceCount - analyticsData.activeDeviceCount)} offline`;
+  }
+
+  const websiteLists = document.querySelectorAll('#analytics-website-activity-panel .rank-list');
+  if (websiteLists.length >= 2) {
+    const mostVisitedHtml = analyticsData.mostVisited.map((entry, index) => {
+      const iconMap = ['fb', 'yt', 'tt', 'g', 'ig'];
+      const label = entry.domain.split('.')[0].slice(0, 2).toUpperCase() || 'W';
+      return `
+        <li>
+          <div class="site-name"><span class="site-icon ${iconMap[index] || 'g'}">${label}</span><span>${entry.domain}</span></div>
+          <strong>${entry.value.toLocaleString()}</strong>
+          <em>${Math.max(4, Math.round((entry.value / Math.max(analyticsData.totalVisits, 1)) * 100))}%</em>
+        </li>
+      `;
+    }).join('');
+    websiteLists[0].innerHTML = mostVisitedHtml || '<li><span>No website activity yet.</span></li>';
+
+    const blockedHtml = analyticsData.blockedDomains.map((entry, index) => {
+      const iconMap = ['fb', 'yt', 'sc', 'ig', 'nf'];
+      const label = entry.domain.split('.')[0].slice(0, 2).toUpperCase() || 'B';
+      return `
+        <li>
+          <div class="site-name"><span class="site-icon ${iconMap[index] || 'g'}">${label}</span><span>${entry.domain}</span></div>
+          <strong>${entry.value}</strong>
+          <em>${Math.max(5, Math.min(99, Math.round((entry.value / Math.max(analyticsData.blockedAttempts, 1)) * 100)))}%</em>
+        </li>
+      `;
+    }).join('');
+    websiteLists[1].innerHTML = blockedHtml || '<li><span>No blocked domains yet.</span></li>';
+  }
+
+  const activityTables = document.querySelectorAll('[data-admin-activity-table]');
+  activityTables.forEach((table) => {
+    const rows = analyticsData.recentActivity.length
+      ? analyticsData.recentActivity.map((entry) => `
+          <tr>
+            <td>${entry.device}</td>
+            <td>${entry.user}</td>
+            <td>${entry.domain}</td>
+            <td>${entry.category}</td>
+            <td><span class="status-pill ${entry.status === 'Blocked' ? 'offline' : 'online'}">${entry.status}</span></td>
+            <td>${entry.duration}</td>
+          </tr>
+        `).join('')
+      : '<tr><td colspan="6">No website activity yet.</td></tr>';
+    table.innerHTML = rows;
+  });
+}
+
 function renderAnalyticsMbUsage() {
   const mbUsageElement = document.getElementById('analytics-mb-total');
   if (!mbUsageElement) return;
@@ -2734,6 +2811,7 @@ function renderDashboard() {
   renderLaptops();
   renderPolicies();
   renderUsage();
+  renderAnalyticsOverview();
   renderAnalyticsMbUsage();
   renderEmployees();
   renderReplacements();
@@ -4113,6 +4191,8 @@ window.addEventListener('DOMContentLoaded', () => {
   if (!enforceAuthRoute()) {
     return;
   }
+
+  warnIfDemoMode();
 
   const requiredRoot = document.getElementById('summary-grid');
   const loginForm = document.getElementById('login-form');
