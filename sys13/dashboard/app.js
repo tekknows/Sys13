@@ -497,12 +497,14 @@ function enforceAuthRoute() {
   const isIndexPage = currentPage.toLowerCase() === 'index.html';
   const isLoginPage = currentPage.toLowerCase() === 'login.html';
 
-  if (isIndexPage && !isAuthenticated()) {
+  const hasValidSession = isAuthenticated();
+
+  if (isIndexPage && !hasValidSession) {
     window.location.replace('login.html');
     return false;
   }
 
-  if (isLoginPage && isAuthenticated()) {
+  if (isLoginPage && hasValidSession) {
     window.location.replace('index.html');
     return false;
   }
@@ -668,7 +670,14 @@ function saveState() {
 
 function isAuthenticated() {
   try {
-    return localStorage.getItem(LOGIN_STORAGE_KEY) === 'true';
+    const isLoggedIn = localStorage.getItem(LOGIN_STORAGE_KEY) === 'true';
+    if (!isLoggedIn) return false;
+
+    const rawSession = localStorage.getItem(AUTH_SESSION_KEY);
+    if (!rawSession) return false;
+
+    const parsed = JSON.parse(rawSession);
+    return Boolean(parsed && typeof parsed.email === 'string' && parsed.email.trim() && typeof parsed.role === 'string' && parsed.role.trim());
   } catch (error) {
     return false;
   }
