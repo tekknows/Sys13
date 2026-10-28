@@ -886,43 +886,96 @@ function togglePasswordFieldVisibility(fieldId, buttonId) {
 async function handlePasswordChange(event) {
   event.preventDefault();
 
+  const currentEmail = getCurrentSessionUser()?.email || DEFAULT_ADMIN.email;
+  const emailInput = document.getElementById('account-email');
+  const newEmail = (emailInput?.value || '').trim().toLowerCase();
   const currentPassword = document.getElementById('current-password')?.value || '';
   const newPassword = document.getElementById('new-password')?.value || '';
   const confirmPassword = document.getElementById('confirm-password')?.value || '';
-  const email = getCurrentSessionUser()?.email || DEFAULT_ADMIN.email;
+  const passwordChangeRequested = Boolean(newPassword || confirmPassword || currentPassword);
 
-  const passwordStrength = getPasswordStrength(newPassword);
+  if (emailInput && !newEmail) {
+    emailInput.value = currentEmail;
+  }
 
-  if (!currentPassword || !newPassword || !confirmPassword) {
-    showSettingsMessage('account-security-message', 'error', 'Please complete all password fields.');
+  if (!currentPassword && (newEmail && newEmail !== currentEmail || passwordChangeRequested)) {
+    showSettingsMessage('account-security-message', 'error', 'Please enter your current password to confirm the change.');
     return;
   }
 
-  const isCurrentPasswordValid = await verifyPasswordForUser(email, currentPassword);
+  if (!currentPassword) {
+    showSettingsMessage('account-security-message', 'error', 'Please enter your current password.');
+    return;
+  }
+
+  const isCurrentPasswordValid = await verifyPasswordForUser(currentEmail, currentPassword);
   if (!isCurrentPasswordValid) {
     showSettingsMessage('account-security-message', 'error', 'The current password is incorrect.');
     return;
   }
 
-  if (newPassword !== confirmPassword) {
-    showSettingsMessage('account-security-message', 'error', 'The new password and confirmation do not match.');
+  if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) {
+    showSettingsMessage('account-security-message', 'error', 'Please enter a valid email address.');
     return;
   }
 
-  if (!passwordStrength.valid) {
-    showSettingsMessage('account-security-message', 'error', 'Use a stronger password with at least 8 characters, a number, uppercase letter, and symbol.');
-    return;
+  if (newEmail && newEmail !== currentEmail) {
+    const existingEmailAccount = DEMO_AUTH_ACCOUNTS.find((account) => account.email.toLowerCase() === newEmail);
+    if (existingEmailAccount && existingEmailAccount.email.toLowerCase() !== currentEmail) {
+      showSettingsMessage('account-security-message', 'error', 'That email address is already in use.');
+      return;
+    }
+  }
+
+  if (newPassword || confirmPassword) {
+    if (!newPassword || !confirmPassword) {
+      showSettingsMessage('account-security-message', 'error', 'Please complete all password fields.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showSettingsMessage('account-security-message', 'error', 'The new password and confirmation do not match.');
+      return;
+    }
+
+    const passwordStrength = getPasswordStrength(newPassword);
+    if (!passwordStrength.valid) {
+      showSettingsMessage('account-security-message', 'error', 'Use a stronger password with at least 8 characters, a number, uppercase letter, and symbol.');
+      return;
+    }
   }
 
   state.security = state.security || {};
   state.security.passwordHashes = state.security.passwordHashes || {};
-  state.security.passwordHashes[email] = await secureHashString(newPassword);
+
+  const nextEmail = newEmail || currentEmail;
+  const currentHash = state.security.passwordHashes[currentEmail] || (await secureHashString(currentPassword));
+  state.security.passwordHashes[currentEmail] = currentHash;
+
+  if (nextEmail !== currentEmail) {
+    state.security.passwordHashes[nextEmail] = currentHash;
+    delete state.security.passwordHashes[currentEmail];
+
+    const accountIndex = DEMO_AUTH_ACCOUNTS.findIndex((account) => account.email.toLowerCase() === currentEmail);
+    if (accountIndex >= 0) {
+      DEMO_AUTH_ACCOUNTS[accountIndex].email = nextEmail;
+    }
+  }
+
+  if (newPassword) {
+    state.security.passwordHashes[nextEmail] = await secureHashString(newPassword);
+  }
+
+  const updatedUser = { email: nextEmail, role: getCurrentUserRole() || 'Administrator' };
+  setAuthenticated(true, updatedUser);
   saveState();
 
   const form = document.getElementById('account-security-form');
   if (form) form.reset();
-  showSettingsMessage('account-security-message', 'success', 'Password updated successfully.');
-  showToast('success', 'Password updated', 'Your password was changed successfully.');
+  if (emailInput) emailInput.value = nextEmail;
+
+  showSettingsMessage('account-security-message', 'success', nextEmail !== currentEmail ? 'Email and security settings updated successfully.' : 'Password updated successfully.');
+  showToast('success', 'Account updated', nextEmail !== currentEmail ? `Your email was changed to ${nextEmail}.` : 'Your password was changed successfully.');
 }
 
 function renderEmployeeRoleRows() {
@@ -981,7 +1034,9 @@ function openRoleAssignmentModal(employeeId) {
 
   nameField.textContent = `${employee.name} ${employee.surname}`;
   emailField.textContent = employee.email;
-  roleField.value = employee.accountRole || 'Employee';
+  const selectedRole = employee.accountRole || 'Employee';
+  roleField.value = selectedRole;
+  roleField.setAttribute('data-selected-role', selectedRole);
   employeeIdField.value = employee.id;
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden', 'false');
@@ -1096,6 +1151,11 @@ function initializeSettingsPage() {
 
   const securityForm = document.getElementById('account-security-form');
   if (securityForm) {
+    const currentSessionEmail = getCurrentSessionUser()?.email || DEFAULT_ADMIN.email;
+    const accountEmailField = document.getElementById('account-email');
+    if (accountEmailField) {
+      accountEmailField.value = currentSessionEmail;
+    }
     securityForm.addEventListener('submit', handlePasswordChange);
   }
 
@@ -1140,6 +1200,16 @@ function initializeSettingsPage() {
   const roleForm = document.getElementById('role-assignment-form');
   if (roleForm) {
     roleForm.addEventListener('submit', saveRoleAssignment);
+    roleForm.addEventListener('click', (event) => event.stopPropagation());
+  }
+
+  const roleSelect = document.getElementById('role-assignment-role');
+  if (roleSelect) {
+    roleSelect.addEventListener('change', () => {
+      roleSelect.setAttribute('data-selected-role', roleSelect.value || 'Employee');
+    });
+    roleSelect.addEventListener('click', (event) => event.stopPropagation());
+    roleSelect.addEventListener('mousedown', (event) => event.stopPropagation());
   }
 
   const roleCancel = document.getElementById('role-assignment-cancel');
