@@ -766,6 +766,33 @@ function setAuthenticated(isLoggedIn, user = null) {
   if (appShell) appShell.style.display = Boolean(isLoggedIn) ? 'flex' : 'none';
 }
 
+async function getSupabaseLoginAccount(email) {
+  const client = getSupabaseClient();
+  if (!client || !email) return null;
+
+  try {
+    const { data, error } = await client
+      .from('user_credentials')
+      .select('email, password_hash, role, is_active')
+      .eq('email', email)
+      .maybeSingle();
+
+    if (error) {
+      console.warn('Supabase login lookup failed.', error);
+      return null;
+    }
+
+    if (!data || data.is_active === false) {
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.warn('Supabase login lookup crashed.', error);
+    return null;
+  }
+}
+
 async function loginUser(event) {
   event.preventDefault();
 
@@ -774,6 +801,32 @@ async function loginUser(event) {
   const errorBox = document.getElementById('login-error');
   const enteredEmail = (emailInput?.value || '').trim().toLowerCase();
   const enteredPassword = passwordInput?.value || '';
+
+  const supabaseAccount = enteredEmail ? await getSupabaseLoginAccount(enteredEmail) : null;
+  if (supabaseAccount) {
+    const enteredHash = await secureHashString(enteredPassword);
+    const storedHash = String(supabaseAccount.password_hash || '').trim().toLowerCase();
+
+    if (storedHash && storedHash === enteredHash.toLowerCase()) {
+      setAuthenticated(true, { email: supabaseAccount.email, role: supabaseAccount.role || 'Administrator' });
+      if (errorBox) errorBox.textContent = '';
+
+      if (document.getElementById('summary-grid')) {
+        renderDashboard();
+        openChangelogModal(true);
+      } else {
+        sessionStorage.removeItem(CHANGELOG_SESSION_KEY);
+        window.location.href = 'index.html';
+      }
+      return;
+    }
+
+    if (errorBox) {
+      errorBox.textContent = 'Invalid email or password.';
+    }
+    return;
+  }
+
   const knownAccounts = Object.entries(state.security?.accountPasswords || {}).map(([email, password]) => ({
     email,
     password,
