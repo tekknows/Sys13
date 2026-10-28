@@ -11,8 +11,6 @@ const DEFAULT_ADMIN = {
 };
 const DEMO_AUTH_ACCOUNTS = [
   { email: 'admin@sys13.com', password: 'admin123', role: 'Administrator' },
-  { email: 'it@sys13.com', password: 'it123', role: 'IT Staff' },
-  { email: 'employee@sys13.com', password: 'emp123', role: 'Employee' },
 ];
 
 const demoState = {
@@ -67,6 +65,7 @@ const demoState = {
     },
   ],
   employees: [
+    { id: 'emp-000', employeeId: 'ADMIN-001', name: 'System', surname: 'Administrator', email: 'admin@sys13.com', department: 'Management', role: 'Administrator', accountRole: 'Administrator' },
     { id: 'emp-001', employeeId: 'EMP-001', name: 'Maria', surname: 'Gomez', email: 'maria@gmail.com', department: 'IT', role: 'Support Technician', accountRole: 'IT Staff' },
     { id: 'emp-002', employeeId: 'EMP-002', name: 'Rafi', surname: 'Ahmed', email: 'rafi@gmail.com', department: 'Operations', role: 'Operations Analyst', accountRole: 'Employee' },
     { id: 'emp-003', employeeId: 'EMP-003', name: 'Tina', surname: 'Su', email: 'tina@gmail.com', department: 'Finance', role: 'Admin Officer', accountRole: 'Administrator' },
@@ -423,6 +422,18 @@ function getDefaultEmployeeAccessRole(employee) {
   return 'Employee';
 }
 
+function isPrivilegedAccountRole(roleName) {
+  const normalized = String(roleName || '').trim();
+  return normalized === 'Administrator' || normalized === 'IT Staff';
+}
+
+function generateTemporaryEmployeePassword() {
+  const prefix = 'Sys13';
+  const suffix = Math.random().toString(36).slice(2, 8).toUpperCase();
+  const number = String(Math.floor(100 + Math.random() * 900));
+  return `${prefix}-${suffix}${number}!`;
+}
+
 function normalizeEmployeeRoles() {
   if (!Array.isArray(state.employees)) return;
   state.employees = state.employees.map((employee) => ({
@@ -452,24 +463,15 @@ function secureHashString(value) {
 function ensureAccountSecurityState() {
   state.security = state.security || {};
   state.security.passwordHashes = state.security.passwordHashes || {};
+  state.security.accountPasswords = state.security.accountPasswords || {};
 
-  DEMO_AUTH_ACCOUNTS.forEach((account) => {
-    if (!state.security.passwordHashes[account.email]) {
-      state.security.passwordHashes[account.email] = 'demo-hash';
-    }
-  });
-
-  const passwordMap = state.security.passwordHashes;
-  const pendingHashes = DEMO_AUTH_ACCOUNTS.filter((account) => passwordMap[account.email] === 'demo-hash');
-  if (!pendingHashes.length) return;
-
-  Promise.all(
-    pendingHashes.map(async (account) => {
-      passwordMap[account.email] = await secureHashString(account.password);
-    })
-  ).then(() => {
-    saveState();
-  });
+  if (!state.security.accountPasswords[DEFAULT_ADMIN.email] || !state.security.passwordHashes[DEFAULT_ADMIN.email]) {
+    state.security.accountPasswords[DEFAULT_ADMIN.email] = DEFAULT_ADMIN.password;
+    secureHashString(DEFAULT_ADMIN.password).then((hash) => {
+      state.security.passwordHashes[DEFAULT_ADMIN.email] = hash;
+      saveState();
+    });
+  }
 }
 
 function getCurrentSessionUser() {
@@ -699,7 +701,15 @@ async function loginUser(event) {
   const errorBox = document.getElementById('login-error');
   const enteredEmail = (emailInput?.value || '').trim().toLowerCase();
   const enteredPassword = passwordInput?.value || '';
-  const account = DEMO_AUTH_ACCOUNTS.find((user) => user.email.toLowerCase() === enteredEmail || user.email.toLowerCase().split('@')[0] === enteredEmail);
+  const knownAccounts = [
+    ...DEMO_AUTH_ACCOUNTS,
+    ...Object.entries(state.security?.accountPasswords || {}).map(([email, password]) => ({
+      email,
+      password,
+      role: email === DEFAULT_ADMIN.email ? 'Administrator' : 'Employee',
+    })),
+  ];
+  const account = knownAccounts.find((user) => user.email.toLowerCase() === enteredEmail || user.email.toLowerCase().split('@')[0] === enteredEmail);
 
   if (!account) {
     if (errorBox) {
@@ -710,7 +720,7 @@ async function loginUser(event) {
 
   const isValid = await verifyPasswordForUser(account.email, enteredPassword);
   if (isValid) {
-    setAuthenticated(true, { email: account.email, role: account.role });
+    setAuthenticated(true, { email: account.email, role: account.role || 'Administrator' });
     if (errorBox) errorBox.textContent = '';
 
     if (document.getElementById('summary-grid')) {
@@ -1000,16 +1010,27 @@ function renderEmployeeRoleRows() {
     return device?.laptopId || 'Not assigned';
   };
 
+  const loginPassword = (employee) => {
+    const roleName = employee.accountRole || employee.role || 'Employee';
+    if (!isPrivilegedAccountRole(roleName)) {
+      return '—';
+    }
+    return state.security?.accountPasswords?.[employee.email] || 'Not generated';
+  };
+
   list.innerHTML = filteredEmployees.map((employee) => `
     <div class="role-row">
       <div class="role-user-meta">
-        <span class="role-user-name">${employee.name} ${employee.surname}</span>
-        <span class="role-user-email">${employee.email}</span>
+        <div class="role-user-main">
+          <span class="role-user-name">${employee.name} ${employee.surname}</span>
+          <span class="status-pill online">Active</span>
+        </div>
       </div>
       <div class="role-user-laptop">${assignedLaptop(employee)}</div>
+      <div class="role-user-email">${employee.email}</div>
       <div class="role-user-role">${employee.accountRole || 'Employee'}</div>
-      <div class="role-user-status"><span class="status-pill online">Active</span></div>
       <div class="role-user-action">
+        <button type="button" class="secondary-button small-button" data-role-edit-id="${employee.id}">Edit</button>
         <button type="button" class="secondary-button small-button" data-role-assign-id="${employee.id}">Assign Role</button>
       </div>
     </div>
@@ -1029,6 +1050,8 @@ function openRoleAssignmentModal(employeeId) {
   const emailField = document.getElementById('role-assignment-email');
   const roleField = document.getElementById('role-assignment-role');
   const employeeIdField = document.getElementById('role-assignment-employee-id');
+  const passwordField = document.getElementById('role-assignment-password');
+  const passwordButton = document.getElementById('generate-role-assignment-password');
 
   if (!modal || !nameField || !emailField || !roleField || !employeeIdField) return;
 
@@ -1038,6 +1061,18 @@ function openRoleAssignmentModal(employeeId) {
   roleField.value = selectedRole;
   roleField.setAttribute('data-selected-role', selectedRole);
   employeeIdField.value = employee.id;
+
+  const nextPassword = isPrivilegedAccountRole(selectedRole)
+    ? (state.security?.accountPasswords?.[employee.email] || generateTemporaryEmployeePassword())
+    : '';
+  if (passwordField) {
+    passwordField.value = nextPassword;
+    passwordField.disabled = !isPrivilegedAccountRole(selectedRole);
+  }
+  if (passwordButton) {
+    passwordButton.disabled = !isPrivilegedAccountRole(selectedRole);
+  }
+
   modal.classList.remove('hidden');
   modal.setAttribute('aria-hidden', 'false');
 }
@@ -1055,6 +1090,7 @@ function saveRoleAssignment(event) {
   const modal = document.getElementById('role-assignment-modal');
   const employeeId = document.getElementById('role-assignment-employee-id')?.value;
   const selectedRole = document.getElementById('role-assignment-role')?.value;
+  const generatedPasswordInput = document.getElementById('role-assignment-password');
   const currentUser = getCurrentSessionUser();
 
   if (!employeeId || !selectedRole) {
@@ -1079,11 +1115,44 @@ function saveRoleAssignment(event) {
   }
 
   employee.accountRole = selectedRole;
+
+  if (isPrivilegedAccountRole(selectedRole)) {
+    const nextPassword = (generatedPasswordInput?.value || '').trim() || state.security?.accountPasswords?.[employee.email] || generateTemporaryEmployeePassword();
+    state.security = state.security || {};
+    state.security.accountPasswords = state.security.accountPasswords || {};
+    state.security.passwordHashes = state.security.passwordHashes || {};
+    state.security.accountPasswords[employee.email] = nextPassword;
+    secureHashString(nextPassword).then((hash) => {
+      state.security.passwordHashes[employee.email] = hash;
+      saveState();
+    });
+
+    const existingUserIndex = DEMO_AUTH_ACCOUNTS.findIndex((account) => account.email.toLowerCase() === employee.email.toLowerCase());
+    const accountPayload = {
+      email: employee.email,
+      password: nextPassword,
+      role: selectedRole,
+    };
+
+    if (existingUserIndex >= 0) {
+      DEMO_AUTH_ACCOUNTS[existingUserIndex] = accountPayload;
+    } else {
+      DEMO_AUTH_ACCOUNTS.push(accountPayload);
+    }
+
+    if (generatedPasswordInput) {
+      generatedPasswordInput.value = nextPassword;
+    }
+  }
+
   logAdminAction('Updated', 'Employee role', `${employee.name} ${employee.surname} -> ${selectedRole}`);
   saveState();
   renderEmployeeRoleRows();
   if (modal) modal.classList.add('hidden');
-  showSettingsMessage('role-assignment-message', 'success', `Role updated for ${employee.name} ${employee.surname}.`);
+  const roleMessage = isPrivilegedAccountRole(selectedRole)
+    ? `Role updated for ${employee.name} ${employee.surname}. Generated login details for ${employee.email}.`
+    : `Role updated for ${employee.name} ${employee.surname}.`;
+  showSettingsMessage('role-assignment-message', 'success', roleMessage);
   showToast('success', 'Role updated', `${employee.name} ${employee.surname} now has ${selectedRole} access.`);
 }
 
@@ -1103,7 +1172,7 @@ function saveGeneralSettings() {
 
   state.settings = state.settings || {};
   if (adminEmailInput) {
-    state.settings.adminEmail = adminEmailInput.value.trim() || 'admin@sys13.com';
+    state.settings.adminEmail = adminEmailInput.value.trim() || '';
   }
   if (accentPicker) {
     const nextAccentColor = normalizeAccentColor(accentPicker.value);
@@ -1176,6 +1245,27 @@ function initializeSettingsPage() {
   const roleList = document.getElementById('role-assignment-list');
   if (roleList) {
     roleList.addEventListener('click', (event) => {
+      const editButton = event.target.closest('[data-role-edit-id]');
+      if (editButton) {
+        const employee = state.employees.find((item) => item.id === editButton.dataset.roleEditId);
+        if (!employee) return;
+
+        const modal = document.getElementById('employee-modal');
+        if (modal) {
+          modal.classList.remove('hidden');
+          modal.setAttribute('aria-hidden', 'false');
+        }
+
+        document.getElementById('employee-edit-id').value = employee.id;
+        document.getElementById('employee-id').value = employee.employeeId || employee.id;
+        document.getElementById('employee-name').value = employee.name;
+        document.getElementById('employee-surname').value = employee.surname;
+        document.getElementById('employee-email').value = employee.email;
+        document.getElementById('employee-department').value = employee.department;
+        document.getElementById('employee-role').value = employee.accountRole || employee.role || 'Employee';
+        return;
+      }
+
       const button = event.target.closest('[data-role-assign-id]');
       if (button) {
         openRoleAssignmentModal(button.dataset.roleAssignId);
@@ -1206,10 +1296,97 @@ function initializeSettingsPage() {
   const roleSelect = document.getElementById('role-assignment-role');
   if (roleSelect) {
     roleSelect.addEventListener('change', () => {
-      roleSelect.setAttribute('data-selected-role', roleSelect.value || 'Employee');
+      const passwordField = document.getElementById('role-assignment-password');
+      const passwordButton = document.getElementById('generate-role-assignment-password');
+      const selectedRole = roleSelect.value || 'Employee';
+      const shouldGenerate = isPrivilegedAccountRole(selectedRole);
+      roleSelect.setAttribute('data-selected-role', selectedRole);
+      if (passwordField) {
+        passwordField.disabled = !shouldGenerate;
+        if (shouldGenerate && !passwordField.value) {
+          const employeeEmail = document.getElementById('role-assignment-email')?.textContent?.trim();
+          passwordField.value = employeeEmail ? (state.security?.accountPasswords?.[employeeEmail] || generateTemporaryEmployeePassword()) : generateTemporaryEmployeePassword();
+        }
+        if (!shouldGenerate) {
+          passwordField.value = '';
+        }
+      }
+      if (passwordButton) {
+        passwordButton.disabled = !shouldGenerate;
+      }
     });
     roleSelect.addEventListener('click', (event) => event.stopPropagation());
     roleSelect.addEventListener('mousedown', (event) => event.stopPropagation());
+  }
+
+  const rolePasswordToggle = document.getElementById('toggle-role-assignment-password');
+  if (rolePasswordToggle) {
+    rolePasswordToggle.addEventListener('click', () => togglePasswordFieldVisibility('role-assignment-password', 'toggle-role-assignment-password'));
+  }
+
+  const employeePasswordToggle = document.getElementById('toggle-employee-password');
+  if (employeePasswordToggle) {
+    employeePasswordToggle.addEventListener('click', () => togglePasswordFieldVisibility('employee-password', 'toggle-employee-password'));
+  }
+
+  const employeeConfirmPasswordToggle = document.getElementById('toggle-employee-confirm-password');
+  if (employeeConfirmPasswordToggle) {
+    employeeConfirmPasswordToggle.addEventListener('click', () => togglePasswordFieldVisibility('employee-confirm-password', 'toggle-employee-confirm-password'));
+  }
+
+  const generateRolePasswordButton = document.getElementById('generate-role-assignment-password');
+  if (generateRolePasswordButton) {
+    generateRolePasswordButton.addEventListener('click', () => {
+      const passwordField = document.getElementById('role-assignment-password');
+      const employeeEmail = document.getElementById('role-assignment-email')?.textContent?.trim();
+      const newPassword = generateTemporaryEmployeePassword();
+      if (passwordField) {
+        passwordField.value = newPassword;
+        passwordField.type = 'password';
+      }
+      if (employeeEmail) {
+        state.security = state.security || {};
+        state.security.accountPasswords = state.security.accountPasswords || {};
+        state.security.accountPasswords[employeeEmail] = newPassword;
+      }
+    });
+  }
+
+  const generateEmployeePasswordButton = document.getElementById('generate-employee-password');
+  if (generateEmployeePasswordButton) {
+    generateEmployeePasswordButton.addEventListener('click', () => {
+      const passwordField = document.getElementById('employee-password');
+      const confirmPasswordField = document.getElementById('employee-confirm-password');
+      const nextPassword = generateTemporaryEmployeePassword();
+      if (passwordField) {
+        passwordField.value = nextPassword;
+        passwordField.type = 'password';
+      }
+      if (confirmPasswordField) {
+        confirmPasswordField.value = nextPassword;
+        confirmPasswordField.type = 'password';
+      }
+    });
+  }
+
+  const addAdminButton = document.getElementById('add-admin-button');
+  if (addAdminButton) {
+    addAdminButton.addEventListener('click', () => {
+      openEmployeeModal();
+      const employeeRoleField = document.getElementById('employee-role');
+      const employeePasswordField = document.getElementById('employee-password');
+      const employeeConfirmPasswordField = document.getElementById('employee-confirm-password');
+      const generatedPassword = generateTemporaryEmployeePassword();
+      if (employeeRoleField) {
+        employeeRoleField.value = 'Administrator';
+      }
+      if (employeePasswordField) {
+        employeePasswordField.value = generatedPassword;
+      }
+      if (employeeConfirmPasswordField) {
+        employeeConfirmPasswordField.value = generatedPassword;
+      }
+    });
   }
 
   const roleCancel = document.getElementById('role-assignment-cancel');
@@ -3084,26 +3261,62 @@ function saveEmployee(event) {
   const email = document.getElementById('employee-email').value.trim();
   const department = document.getElementById('employee-department').value.trim();
   const role = document.getElementById('employee-role').value.trim();
+  const password = document.getElementById('employee-password')?.value.trim() || '';
+  const confirmPassword = document.getElementById('employee-confirm-password')?.value.trim() || '';
   const editId = document.getElementById('employee-edit-id').value;
 
   if (!name || !surname || !email || !department || !role || !employeeId) {
     return;
   }
 
+  if (isPrivilegedAccountRole(role)) {
+    if (password || confirmPassword) {
+      if (password !== confirmPassword) {
+        alert('The confirmation password does not match the first password entered.');
+        return;
+      }
+    }
+  }
+
+  const employeeRecord = {
+    employeeId,
+    name,
+    surname,
+    email,
+    department,
+    role,
+    accountRole: role,
+  };
+
   if (editId) {
-    state.employees = state.employees.map((employee) => employee.id === editId ? { ...employee, employeeId, name, surname, email, department, role } : employee);
+    state.employees = state.employees.map((employee) => employee.id === editId ? { ...employee, ...employeeRecord } : employee);
     logAdminAction('Edited', 'Employee', `${name} ${surname}`);
   } else {
     state.employees.push({
       id: `emp-${Date.now()}`,
-      employeeId,
-      name,
-      surname,
-      email,
-      department,
-      role,
+      ...employeeRecord,
     });
     logAdminAction('Added', 'Employee', `${name} ${surname}`);
+  }
+
+  if (isPrivilegedAccountRole(role)) {
+    const nextPassword = password || state.security?.accountPasswords?.[email] || generateTemporaryEmployeePassword();
+    state.security = state.security || {};
+    state.security.accountPasswords = state.security.accountPasswords || {};
+    state.security.passwordHashes = state.security.passwordHashes || {};
+    state.security.accountPasswords[email] = nextPassword;
+    secureHashString(nextPassword).then((hash) => {
+      state.security.passwordHashes[email] = hash;
+      saveState();
+    });
+
+    const accountIndex = DEMO_AUTH_ACCOUNTS.findIndex((account) => account.email.toLowerCase() === email.toLowerCase());
+    const accountPayload = { email, password: nextPassword, role };
+    if (accountIndex >= 0) {
+      DEMO_AUTH_ACCOUNTS[accountIndex] = accountPayload;
+    } else {
+      DEMO_AUTH_ACCOUNTS.push(accountPayload);
+    }
   }
 
   const assignedDevice = state.devices.find((device) => device.email === email || (device.user === name && device.surname === surname));
@@ -3256,12 +3469,18 @@ function openEmployeeModal(employee = null) {
     document.getElementById('employee-email').value = employee.email;
     document.getElementById('employee-department').value = employee.department;
     document.getElementById('employee-role').value = employee.role;
+    document.getElementById('employee-password').value = state.security?.accountPasswords?.[employee.email] || '';
+    document.getElementById('employee-confirm-password').value = state.security?.accountPasswords?.[employee.email] || '';
   } else if (form) {
     form.reset();
     const editId = document.getElementById('employee-edit-id');
     if (editId) editId.value = '';
     const employeeIdInput = document.getElementById('employee-id');
     if (employeeIdInput) employeeIdInput.value = getNextEmployeeId();
+    const employeePasswordInput = document.getElementById('employee-password');
+    const employeeConfirmPasswordInput = document.getElementById('employee-confirm-password');
+    if (employeePasswordInput) employeePasswordInput.value = '';
+    if (employeeConfirmPasswordInput) employeeConfirmPasswordInput.value = '';
   }
 }
 
@@ -3552,7 +3771,7 @@ function closeIssueModal() {
 }
 
 function getAdminEmail() {
-  return (state.settings && state.settings.adminEmail) ? state.settings.adminEmail : 'admin@sys13.com';
+  return (state.settings && state.settings.adminEmail) ? state.settings.adminEmail : '';
 }
 
 function getRetentionDateValue() {
@@ -4360,7 +4579,7 @@ window.addEventListener('DOMContentLoaded', () => {
     adminEmailInput.value = getAdminEmail();
     adminEmailInput.addEventListener('change', () => {
       state.settings = state.settings || {};
-      state.settings.adminEmail = adminEmailInput.value.trim() || 'admin@sys13.com';
+      state.settings.adminEmail = adminEmailInput.value.trim() || '';
       saveState();
       renderDashboard();
     });
