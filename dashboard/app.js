@@ -364,6 +364,25 @@ function ensureAccountSecurityState() {
   state.security.accountPasswords = state.security.accountPasswords || {};
 }
 
+async function ensureDefaultAdminAccount() {
+  const adminEmail = 'admin@sys13.com';
+  const defaultPassword = 'admin123';
+
+  state.security = state.security || {};
+  state.security.accountPasswords = state.security.accountPasswords || {};
+  state.security.passwordHashes = state.security.passwordHashes || {};
+
+  if (!state.security.accountPasswords[adminEmail] && !state.security.passwordHashes[adminEmail]) {
+    state.security.accountPasswords[adminEmail] = defaultPassword;
+    state.security.passwordHashes[adminEmail] = await secureHashString(defaultPassword);
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.warn('Unable to persist the default admin account.', error);
+    }
+  }
+}
+
 function getCurrentSessionUser() {
   try {
     const raw = localStorage.getItem(AUTH_SESSION_KEY);
@@ -379,6 +398,9 @@ hydrateStateFromSupabase().catch((error) => {
   console.warn('Supabase state hydration failed.', error);
 });
 ensureAccountSecurityState();
+ensureDefaultAdminAccount().catch((error) => {
+  console.warn('Default admin account bootstrap failed.', error);
+});
 normalizeEmployeeRoles();
 
 function getCurrentUserRole() {
